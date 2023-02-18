@@ -5,24 +5,23 @@ import ru.beetlerat.threads.util.ThreadSafeConsoleOutput;
 
 import java.util.concurrent.Semaphore;
 
-public abstract class RunnableThread implements Runnable {
-    private final Thread thread;
+public abstract class ThreadSuccessor extends Thread {
     private final int timeInterval;
 
-    public RunnableThread(String threadName, int timeInterval) {
-        this.thread = new Thread(this, threadName);
+    public ThreadSuccessor(String threadName, int timeInterval) {
+        super(threadName);
         this.timeInterval = timeInterval;
-        this.thread.start();
+        start();
     }
 
     private void printNameToConsole() {
-        ThreadSafeConsoleOutput.consoleOutput(this.thread.getName());
+        ThreadSafeConsoleOutput.consoleOutput(getName());
     }
 
     protected void performComplexCalculations() {
         for (int i = 0; i < timeInterval; i++) {
-            ThreadSafeConsoleOutput.consoleOutput(thread.getName());
-            Calculations.generalOutput.append(thread.getName());
+            ThreadSafeConsoleOutput.consoleOutput(getName());
+            Calculations.generalOutput.append(getName());
             Calculations.performCalculations();
         }
     }
@@ -30,18 +29,14 @@ public abstract class RunnableThread implements Runnable {
     protected void performComplexCalculations(Semaphore acquire, Semaphore release) throws InterruptedException {
         for (int i = 0; i < timeInterval; i++) {
             acquire.acquire(1);
-            ThreadSafeConsoleOutput.consoleOutput(thread.getName());
-            Calculations.generalOutput.append(thread.getName());
+            ThreadSafeConsoleOutput.consoleOutput(getName());
+            Calculations.generalOutput.append(getName());
             Calculations.performCalculations();
             release.release();
         }
     }
 
     protected abstract void threadActions() throws InterruptedException;
-
-    public Thread getThread() {
-        return thread;
-    }
 
     @Override
     public void run() {

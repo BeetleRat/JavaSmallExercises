@@ -8,7 +8,7 @@ import java.util.concurrent.TimeUnit;
 public class Calculations {
     public static StringBuilder generalOutput = new StringBuilder();
 
-    public static void run() {
+    public static void performCalculations() {
         try {
             Thread.sleep(TimeUnit.MILLISECONDS.toMillis(ThreadLocalRandom.current().nextInt(10, 150)));
         } catch (InterruptedException e) {
@@ -21,28 +21,46 @@ public class Calculations {
         int currentStringIndex = 0;
 
         for (String onePattern : threadsPattern) {
+
             Map<Character, Integer> charCount = new HashMap<>();
             boolean isStrictSequence = false;
             for (int i = 0; i < onePattern.length(); i++) {
+
                 if (Character.isUpperCase(onePattern.charAt(i))) {
+
                     isStrictSequence = true;
+
                     break;
                 }
                 charCount.put(onePattern.charAt(i), 0);
             }
+
             int currentPatternIndex = 0;
             while (currentPatternIndex < onePattern.length() * count) {
                 if (isStrictSequence) {
-                    if (string.charAt(currentStringIndex)!=onePattern.toLowerCase().charAt(currentPatternIndex%count)){
+                    char expectedChar = onePattern.toLowerCase().charAt(currentPatternIndex % count);
+
+                    if (string.charAt(currentStringIndex) != expectedChar) {
+
+                        ThreadSafeConsoleOutput.consoleOutput(String.format("Not correct result: %s except %s\n",
+                                string.substring(0, currentStringIndex) + Character.toUpperCase(string.charAt(currentStringIndex)),
+                                string.substring(0, currentStringIndex) + Character.toUpperCase(expectedChar)));
+
                         return false;
                     }
+
                 } else {
 
                     if (!charCount.containsKey(string.charAt(currentStringIndex)) || charCount.get(string.charAt(currentStringIndex)) >= count) {
+
+                        ThreadSafeConsoleOutput.consoleOutput(String.format("Not correct result: %s except one of \"%s\"\n",
+                                string.substring(0, currentStringIndex) + Character.toUpperCase(string.charAt(currentStringIndex)),
+                                onePattern));
+
                         return false;
                     }
-                    charCount.put(string.charAt(currentStringIndex), charCount.get(string.charAt(currentStringIndex)) + 1);
 
+                    charCount.put(string.charAt(currentStringIndex), charCount.get(string.charAt(currentStringIndex)) + 1);
                 }
                 currentStringIndex++;
                 currentPatternIndex++;
