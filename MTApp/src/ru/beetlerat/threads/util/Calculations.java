@@ -6,11 +6,13 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 
 public class Calculations {
-    public static StringBuilder generalOutput = new StringBuilder();
-
     public static void performCalculations() {
         try {
-            Thread.sleep(TimeUnit.MILLISECONDS.toMillis(ThreadLocalRandom.current().nextInt(10, 150)));
+            int delay = ThreadLocalRandom.current().nextInt(10, 200);
+            Thread.sleep(TimeUnit.MILLISECONDS.toMillis(delay));
+            if (ThreadLocalRandom.current().nextInt(0, 100) > 10) {
+                Thread.sleep(TimeUnit.MILLISECONDS.toMillis(delay));
+            }
         } catch (InterruptedException e) {
             ThreadSafeConsoleOutput.consoleOutput(String.format("\nComputational thread %s error: %s\n", Thread.currentThread(), e));
         }

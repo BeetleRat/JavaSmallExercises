@@ -15,13 +15,13 @@ public abstract class ThreadSuccessor extends Thread {
     }
 
     private void printNameToConsole() {
-        ThreadSafeConsoleOutput.consoleOutput(getName());
+        ThreadSafeConsoleOutput.consoleOutput(getThreadName());
+        ThreadSafeConsoleOutput.appendToGeneralOutput(getThreadName());
     }
 
     protected void performComplexCalculations() {
         for (int i = 0; i < timeInterval; i++) {
-            ThreadSafeConsoleOutput.consoleOutput(getName());
-            Calculations.generalOutput.append(getName());
+            printNameToConsole();
             Calculations.performCalculations();
         }
     }
@@ -29,14 +29,17 @@ public abstract class ThreadSuccessor extends Thread {
     protected void performComplexCalculations(Semaphore acquire, Semaphore release) throws InterruptedException {
         for (int i = 0; i < timeInterval; i++) {
             acquire.acquire(1);
-            ThreadSafeConsoleOutput.consoleOutput(getName());
-            Calculations.generalOutput.append(getName());
+            printNameToConsole();
             Calculations.performCalculations();
             release.release();
         }
     }
 
     protected abstract void threadActions() throws InterruptedException;
+
+    public String getThreadName() {
+        return getName();
+    }
 
     @Override
     public void run() {

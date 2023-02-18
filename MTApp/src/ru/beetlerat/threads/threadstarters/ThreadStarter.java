@@ -15,13 +15,13 @@ public abstract class ThreadStarter<T> {
     private static final String THREAD_PATTERN = "abi\nbcdi\nbefhi\nbgfhi\nKHI\nm";
 
     public ThreadStarter() {
-        Calculations.generalOutput.setLength(0);
+        ThreadSafeConsoleOutput.clearGeneralOutput();
 
         T[] threads = createThreads();
 
         waitOtherThreads(threads);
 
-        if (Calculations.isStringMatchesPattern(Calculations.generalOutput.toString(), THREAD_PATTERN, TIME_INTERVAL)) {
+        if (Calculations.isStringMatchesPattern(ThreadSafeConsoleOutput.getGeneralOutput().toString(), THREAD_PATTERN, TIME_INTERVAL)) {
             ThreadSafeConsoleOutput.consoleOutput("\nResult is correct\n");
         } else {
             ThreadSafeConsoleOutput.consoleOutput("\nResult is NOT correct\n");

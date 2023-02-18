@@ -1,35 +1,51 @@
 package ru.beetlerat.threads.threadstarters;
 
-import ru.beetlerat.threads.threads.RunnableThread;
+import ru.beetlerat.threads.threads.CallableThread;
 import ru.beetlerat.threads.util.ThreadSafeConsoleOutput;
 
-import java.util.concurrent.Semaphore;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.*;
 
-public class RunnableThreadStarter extends ThreadStarter<RunnableThread> {
-    @Override
-    protected void waitOtherThreads(RunnableThread[] threads) {
-        try {
-            for (int i = 0; i < 11; i++) {
-                threads[i].getThread().join();
-            }
-        } catch (InterruptedException e) {
-            ThreadSafeConsoleOutput.consoleOutput(String.format("\nThread exception: %s\n", e));
+public class ExecutorThreadStarter extends ThreadStarter<CallableThread> {
+    private ExecutorService threadsService;
+    private List<Future<Integer>> tasks;
+
+    private void startThreads(CallableThread[] threads) {
+        this.tasks = new ArrayList<>();
+        this.threadsService = Executors.newFixedThreadPool(11);
+        for (int i = threads.length - 1; i >= 0; i--) {
+            Future<Integer> task = threadsService.submit(threads[i]);
+            tasks.add(task);
         }
     }
 
     @Override
-    protected RunnableThread[] createThreads() {
+    protected void waitOtherThreads(CallableThread[] threads) {
+        try {
+            for (int i = 0; i < 11; i++) {
+                tasks.get(i).get();
+            }
+            threadsService.shutdown();
+        } catch (InterruptedException | ExecutionException e) {
+            ThreadSafeConsoleOutput.consoleOutput(String.format("\nThread exception: %s\n", e));
+            threadsService.shutdown();
+        }
+    }
+
+    @Override
+    protected CallableThread[] createThreads() {
         Semaphore[] semaphores = createSemaphores();
 
-        RunnableThread[] threads = new RunnableThread[11];
-        threads[M] = new RunnableThread("m", TIME_INTERVAL) {
+        CallableThread[] threads = new CallableThread[11];
+        threads[M] = new CallableThread("m", TIME_INTERVAL) {
             @Override
             protected void threadActions() throws InterruptedException {
                 acquireSemaphores(semaphores, K, H, I);
                 performComplexCalculations();
             }
         };
-        threads[K] = new RunnableThread("k", TIME_INTERVAL) {
+        threads[K] = new CallableThread("k", TIME_INTERVAL) {
             @Override
             protected void threadActions() throws InterruptedException {
                 acquireSemaphores(semaphores, G, B, F, H, I);
@@ -38,7 +54,7 @@ public class RunnableThreadStarter extends ThreadStarter<RunnableThread> {
                 semaphores[K].release(1);
             }
         };
-        threads[I] = new RunnableThread("i", TIME_INTERVAL) {
+        threads[I] = new CallableThread("i", TIME_INTERVAL) {
             @Override
             protected void threadActions() throws InterruptedException {
                 performComplexCalculations();
@@ -61,7 +77,7 @@ public class RunnableThreadStarter extends ThreadStarter<RunnableThread> {
                 semaphores[I].release(1);
             }
         };
-        threads[H] = new RunnableThread("h", TIME_INTERVAL) {
+        threads[H] = new CallableThread("h", TIME_INTERVAL) {
             @Override
             protected void threadActions() throws InterruptedException {
                 acquireSemaphores(semaphores, D, C, B, I);
@@ -77,7 +93,7 @@ public class RunnableThreadStarter extends ThreadStarter<RunnableThread> {
                 semaphores[H].release(1);
             }
         };
-        threads[G] = new RunnableThread("g", TIME_INTERVAL) {
+        threads[G] = new CallableThread("g", TIME_INTERVAL) {
             @Override
             protected void threadActions() throws InterruptedException {
                 acquireSemaphores(semaphores, E, F, H, B, I);
@@ -85,7 +101,7 @@ public class RunnableThreadStarter extends ThreadStarter<RunnableThread> {
                 semaphores[G].release(3);
             }
         };
-        threads[F] = new RunnableThread("f", TIME_INTERVAL) {
+        threads[F] = new CallableThread("f", TIME_INTERVAL) {
             @Override
             protected void threadActions() throws InterruptedException {
                 acquireSemaphores(semaphores, D, C, B, I);
@@ -97,7 +113,7 @@ public class RunnableThreadStarter extends ThreadStarter<RunnableThread> {
                 semaphores[F].release(3);
             }
         };
-        threads[E] = new RunnableThread("e", TIME_INTERVAL) {
+        threads[E] = new CallableThread("e", TIME_INTERVAL) {
             @Override
             protected void threadActions() throws InterruptedException {
                 acquireSemaphores(semaphores, C, D, B, I);
@@ -105,7 +121,7 @@ public class RunnableThreadStarter extends ThreadStarter<RunnableThread> {
                 semaphores[E].release(5);
             }
         };
-        threads[D] = new RunnableThread("d", TIME_INTERVAL) {
+        threads[D] = new CallableThread("d", TIME_INTERVAL) {
             @Override
             protected void threadActions() throws InterruptedException {
                 acquireSemaphores(semaphores, A, B, I);
@@ -113,7 +129,7 @@ public class RunnableThreadStarter extends ThreadStarter<RunnableThread> {
                 semaphores[D].release(5);
             }
         };
-        threads[C] = new RunnableThread("c", TIME_INTERVAL) {
+        threads[C] = new CallableThread("c", TIME_INTERVAL) {
             @Override
             protected void threadActions() throws InterruptedException {
                 acquireSemaphores(semaphores, A, B, I);
@@ -121,7 +137,7 @@ public class RunnableThreadStarter extends ThreadStarter<RunnableThread> {
                 semaphores[C].release(5);
             }
         };
-        threads[B] = new RunnableThread("b", TIME_INTERVAL) {
+        threads[B] = new CallableThread("b", TIME_INTERVAL) {
             @Override
             protected void threadActions() throws InterruptedException {
 
@@ -141,7 +157,7 @@ public class RunnableThreadStarter extends ThreadStarter<RunnableThread> {
                 semaphores[B].release(3);
             }
         };
-        threads[A] = new RunnableThread("a", TIME_INTERVAL) {
+        threads[A] = new CallableThread("a", TIME_INTERVAL) {
             @Override
             protected void threadActions() throws InterruptedException {
 
@@ -149,6 +165,9 @@ public class RunnableThreadStarter extends ThreadStarter<RunnableThread> {
                 semaphores[A].release(4);
             }
         };
+
+        startThreads(threads);
+
         return threads;
     }
 }

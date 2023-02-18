@@ -3,21 +3,25 @@ package ru.beetlerat.threads.threads;
 import ru.beetlerat.threads.util.Calculations;
 import ru.beetlerat.threads.util.ThreadSafeConsoleOutput;
 
+import java.util.concurrent.Callable;
 import java.util.concurrent.Semaphore;
 
-public abstract class RunnableThread implements Runnable {
-    private final Thread thread;
+public abstract class CallableThread implements Callable<Integer> {
     private final int timeInterval;
+    private final String threadName;
 
-    public RunnableThread(String threadName, int timeInterval) {
-        this.thread = new Thread(this, threadName);
+    public CallableThread(String threadName, int timeInterval) {
         this.timeInterval = timeInterval;
-        this.thread.start();
+        this.threadName = threadName;
+    }
+
+    public String getThreadName() {
+        return threadName;
     }
 
     private void printNameToConsole() {
-        ThreadSafeConsoleOutput.consoleOutput(this.thread.getName());
-        ThreadSafeConsoleOutput.appendToGeneralOutput(thread.getName());
+        ThreadSafeConsoleOutput.consoleOutput(getThreadName());
+        ThreadSafeConsoleOutput.appendToGeneralOutput(getThreadName());
     }
 
     protected void performComplexCalculations() {
@@ -38,20 +42,14 @@ public abstract class RunnableThread implements Runnable {
 
     protected abstract void threadActions() throws InterruptedException;
 
-    public Thread getThread() {
-        return thread;
-    }
-
-    public String getThreadName() {
-        return thread.getName();
-    }
-
     @Override
-    public void run() {
+    public Integer call() throws Exception {
         try {
             threadActions();
         } catch (InterruptedException e) {
             ThreadSafeConsoleOutput.consoleOutput(e.toString());
+            return 0;
         }
+        return 1;
     }
 }
